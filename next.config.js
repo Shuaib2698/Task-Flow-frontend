@@ -2,13 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost'], // Add any image domains you use
+    domains: ['localhost'],
   },
-  // For production deployment
-  env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL,
-  },
+  // No need to manually set env here, Next.js picks them up automatically
 };
 
 export default nextConfig;

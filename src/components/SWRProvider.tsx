@@ -3,7 +3,7 @@
 import { SWRConfig } from 'swr';
 
 const fetcher = async (url: string) => {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://task-flow-backend-bezf.onrender.com/api';
   
   const response = await fetch(`${API_URL}${url}`, {
     credentials: 'include',
@@ -12,7 +12,12 @@ const fetcher = async (url: string) => {
   
   if (!response.ok) {
     if (response.status === 401) {
-      window.location.href = '/login';
+      // Don't redirect if we're on auth pages
+      if (typeof window !== 'undefined' && 
+          !window.location.pathname.includes('/login') && 
+          !window.location.pathname.includes('/register')) {
+        window.location.href = '/login';
+      }
       return;
     }
     
