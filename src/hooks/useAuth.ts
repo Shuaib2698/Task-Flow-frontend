@@ -129,35 +129,40 @@ const getProfile = useCallback(async (): Promise<User | null> => {
   };
 
   const login = async (data: { email: string; password: string }) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-      
-      const result: ApiResponse<User> = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      
-      setUser(result.data);
-      await getAllUsers(); // Fetch users after login
-      toast.success('Login successful!');
-      router.push('/dashboard');
-      return result.data;
-    } catch (error: any) {
-      toast.error(error.message || 'Login failed');
-      throw error;
-    } finally {
-      setIsLoading(false);
+  setIsLoading(true);
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    
+    const result: ApiResponse<{ user: User; token: string }> = await response.json();
+    
+    if (!result.success) {
+      throw new Error(result.message);
     }
-  };
+    
+    // Store token in localStorage
+    if (result.data.token) {
+      localStorage.setItem('auth_token', result.data.token);
+    }
+    
+    setUser(result.data.user);
+    await getAllUsers();
+    toast.success('Login successful!');
+    router.push('/dashboard');
+    return result.data.user;
+  } catch (error: any) {
+    toast.error(error.message || 'Login failed');
+    throw error;
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const logout = async () => {
     try {
