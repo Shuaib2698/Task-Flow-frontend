@@ -31,42 +31,46 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://task-flow-backend-be
   const loading = isLoading;
 
   // Get current user profile
-  const getProfile = useCallback(async (): Promise<User | null> => {
-    if (isChecking) return user;
+  // In useAuth.ts, update the getProfile function
+const getProfile = useCallback(async (): Promise<User | null> => {
+  if (isChecking) return user;
+  
+  setIsChecking(true);
+  try {
+    const response = await fetch(`${API_URL}/auth/me`, {
+      credentials: 'include',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+    });
     
-    setIsChecking(true);
-    try {
-      const response = await fetch(`${API_URL}/auth/me`, {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-      
-      if (response.status === 401 || response.status === 403) {
-        setUser(null);
-        return null;
-      }
-      
-      if (response.ok) {
-        const result: ApiResponse<User> = await response.json();
-        
-        if (result.success && result.data) {
-          setUser(result.data);
-          setIsLoading(false);
-          return result.data;
-        }
-      }
-      
+    if (response.status === 401 || response.status === 403) {
       setUser(null);
       return null;
-    } catch (error) {
-      console.error('Auth error:', error);
-      setUser(null);
-      return null;
-    } finally {
-      setIsChecking(false);
-      setIsLoading(false);
     }
-  }, [API_URL, isChecking, user]);
+    
+    if (response.ok) {
+      const result: ApiResponse<User> = await response.json();
+      
+      if (result.success && result.data) {
+        setUser(result.data);
+        setIsLoading(false);
+        return result.data;
+      }
+    }
+    
+    setUser(null);
+    return null;
+  } catch (error) {
+    console.error('Auth error:', error);
+    setUser(null);
+    return null;
+  } finally {
+    setIsChecking(false);
+    setIsLoading(false);
+  }
+}, [API_URL, isChecking, user]);
 
   // Get all users for assignment dropdown
   const getAllUsers = useCallback(async (): Promise<User[]> => {
